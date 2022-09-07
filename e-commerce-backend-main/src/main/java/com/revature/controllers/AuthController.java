@@ -42,6 +42,11 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/userprofile")
+    public ResponseEntity<Object> viewAccount(HttpSession session)  {	
+		return ResponseEntity.ok(session.getAttribute("user"));
+    }
+    
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest) {
         User created = new User(0,
