@@ -1,15 +1,31 @@
 package com.revature.controllers;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.revature.annotations.Authorized;
 import com.revature.dtos.ProductInfo;
 import com.revature.models.Product;
 import com.revature.services.ProductService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.revature.utils.BucketUtil;
 
 @RestController
 @RequestMapping("/api/product")
@@ -17,6 +33,10 @@ import java.util.Optional;
 public class ProductController {
 
     private final ProductService productService;
+    private final String aws = "https://p306272022.s3.amazonaws.com/";
+    
+    @Autowired
+    private BucketUtil bucketutil;
 
     public ProductController(ProductService productService) {
         this.productService = productService;
@@ -43,6 +63,18 @@ public class ProductController {
     @PutMapping
     public ResponseEntity<Product> upsert(@RequestBody Product product) {
         return ResponseEntity.ok(productService.save(product));
+    }
+    
+	@PostMapping(path="/update/picture")
+    public String updatePicture(@RequestParam int id, InputStream in, HttpServletRequest request) {
+    	String key = "key" + id +".png";
+    	Optional<Product> p =this.productService.findById(id);
+   		Product product = p.get();
+    	bucketutil.uploadInputStream(in, key);
+    	String image = aws + key;
+    	product.setImage(image);
+    	upsert(product);
+    	return "success";
     }
 
     @Authorized
@@ -84,4 +116,6 @@ public class ProductController {
 
         return ResponseEntity.ok(optional.get());
     }
+    
+
 }
