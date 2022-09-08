@@ -44,7 +44,6 @@ public class AuthController {
     
         @PostMapping("/userprofile")
     public ResponseEntity<Object> viewAccount(HttpSession session)  {
-    	
 		return ResponseEntity.ok(session.getAttribute("user"));
     }
 
